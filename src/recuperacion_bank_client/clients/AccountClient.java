@@ -28,7 +28,7 @@ public class AccountClient {
 
     public AccountClient() {
         client = javax.ws.rs.client.ClientBuilder.newClient();
-        webTarget = client.target(BASE_URI).path("Account");
+        webTarget = client.target(BASE_URI).path("account");
     }
 
     public void updateAccount(Object requestEntity, String id) throws ClientErrorException {
@@ -49,7 +49,7 @@ public class AccountClient {
         webTarget.request(javax.ws.rs.core.MediaType.APPLICATION_XML).post(javax.ws.rs.client.Entity.entity(requestEntity, javax.ws.rs.core.MediaType.APPLICATION_XML));
     }
 
-    public <T> T findAll(GenericType<T> responseType) throws ClientErrorException {
+    public <T> T findAllAccounts(GenericType<T> responseType) throws ClientErrorException {
         WebTarget resource = webTarget;
         return resource.request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
     }
@@ -57,7 +57,7 @@ public class AccountClient {
     //Necesita probarse
     public <T> T findAccountsByCustomerId(GenericType<T> responseType, String id) throws ClientErrorException {
         WebTarget resource = webTarget;
-        resource = resource.path(java.text.MessageFormat.format("{0}", new Object[]{id}));
+        resource = resource.path(java.text.MessageFormat.format("customer/{0}", new Object[]{id}));
         return resource.request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
     }
 

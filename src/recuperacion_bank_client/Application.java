@@ -14,12 +14,15 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import recuperacion_bank_client.controllers.CustomerAccountsController;
+import recuperacion_bank_client.model.Customer;
 
 /**
  *
  * @author leioa
  */
 public class Application extends javafx.application.Application {
+    
+    Customer user = new Customer();
     
     public static void main(String[] args) {
         launch(args);
@@ -33,11 +36,17 @@ public class Application extends javafx.application.Application {
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
+        readUser();
         FXMLLoader loader = new FXMLLoader(getClass().getResource("views/CustomerAccountsView.fxml"));
         Parent root = (Parent) loader.load();
         CustomerAccountsController controller = ((CustomerAccountsController) loader.getController());
+        controller.setUser(this.user);
         controller.setStage(primaryStage);
         controller.initStage(root);
+    }
+    
+    public void readUser() {
+        this.user.setId(Long.parseLong("102263301"));
     }
     
 }

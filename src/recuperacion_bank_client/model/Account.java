@@ -8,12 +8,14 @@ package recuperacion_bank_client.model;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
  * @author leioa
  */
+@XmlRootElement
 public class Account implements Serializable {
 
     private static final long serialVersionUID = 1L;
