@@ -6,14 +6,19 @@
 package recuperacion_bank_client.controllers;
 
 import com.sun.javafx.scene.control.skin.TableViewSkin;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -22,7 +27,9 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -46,6 +53,7 @@ import javafx.scene.control.cell.MapValueFactory;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -88,6 +96,12 @@ public class CustomerAccountsController {
      * The REST client for accounts
      */
     private static final AccountClient CLIENT = new AccountClient();
+
+    /**
+     * VBox that contain all the view
+     */
+    @FXML
+    private VBox vBoxContainer;
 
     /**
      * ImageView that contains user's image
@@ -163,18 +177,6 @@ public class CustomerAccountsController {
     private TableColumn tableColumnBeginBalanceTimestamp;
 
     /**
-     * TableColumn that shows the customers of the user's accounts
-     */
-    @FXML
-    private TableColumn tableColumnCustomers;
-
-    /**
-     * TableColumn that shows the movements of the user's accounts
-     */
-    @FXML
-    private TableColumn tableColumnMovements;
-
-    /**
      * This method sets the stage
      *
      * @param stage Stage to be set
@@ -193,7 +195,9 @@ public class CustomerAccountsController {
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.setTitle("Accounts");
-        //stage.setMaximized(true);
+        stage.setMinWidth(520);
+        stage.setMinHeight(320);
+        buttonNewAccount.setOnAction(this::handleButtonNewAccountAction);
 
         stage.show();
 
@@ -206,8 +210,43 @@ public class CustomerAccountsController {
      */
     private void populateData() {
         List<Account> accounts = new ArrayList<Account>(getAccounts("" + user.getId()));
+        try {
+            if (accounts.get(0) != null) {
+                Set<Customer> customers = accounts.get(0).getCustomers();
+                for (Customer c : customers) {
+                    if (c.getId().equals(user.getId())) {
+                        user = c;
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error retrieving info");
+            alert.setHeaderText(null);
+            alert.setContentText("Cannot get the user information. Please, try again later.");
+            alert.showAndWait();
+            LOGGER.severe("There was an error retrieving user information: "+e.getMessage());
+            if(user.getFirstName() == null){
+                user.setFirstName("");
+                user.setMiddleInitial("");
+                user.setLastName("");
+            }
+        }
+        labelUserName.setText(user.getFirstName() + " " + user.getMiddleInitial() + " " + user.getLastName());
+        labelUserInfo.setText("ID: " + user.getId());
         ObservableList<Account> observableAccounts = FXCollections.observableArrayList(accounts);
-        populateTable(observableAccounts);
+        try {
+            populateTable(observableAccounts);
+        }
+        catch(Exception e) {
+            LOGGER.severe("There was an error populating the table: "+e.getMessage());
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error showing info");
+            alert.setHeaderText(null);
+            alert.setContentText("There was an error showing the data, please, try again.");
+            alert.showAndWait();
+        }
     }
 
     /**
@@ -226,7 +265,7 @@ public class CustomerAccountsController {
             alert.setHeaderText(null);
             alert.setContentText("Cannot get the user's accounts. Please, try again later...");
             alert.showAndWait();
-            LOGGER.severe(e.getMessage());
+            LOGGER.severe("There was an error retrieving the accounts: "+e.getMessage());
             accounts = new HashSet<Account>();
         }
         return accounts;
@@ -241,6 +280,7 @@ public class CustomerAccountsController {
         //Column Account ID
         tableColumnId.setCellFactory(TextFieldTableCell.<Account, Long>forTableColumn(new LongStringConverter()));
         tableColumnId.setCellValueFactory(new PropertyValueFactory("id"));
+        tableColumnId.setStyle("-fx-alignment: TOP-RIGHT;");
 
         //Column Account type
         tableColumnType.setCellFactory(TextFieldTableCell.<Account, AccountType>forTableColumn(new StringConverter<AccountType>() {
@@ -263,10 +303,10 @@ public class CustomerAccountsController {
             }
         }));
         tableColumnType.setCellValueFactory(new PropertyValueFactory("type"));
+        tableColumnType.setStyle("-fx-alignment: TOP-CENTER;");
 
         //Column Account description
-        
-        tableColumnDescription.setCellFactory(t -> {
+        tableColumnDescription.setCellFactory(column -> {
             TableCell<Account, String> cell = new TableCell<>();
             Text text = new Text();
             cell.setGraphic(text);
@@ -278,94 +318,69 @@ public class CustomerAccountsController {
         tableColumnDescription.setCellValueFactory(new PropertyValueFactory("description"));
 
         //Column Account balance
-        tableColumnBalance.setCellFactory(TextFieldTableCell.<Account, Double>forTableColumn(new DoubleStringConverter()));
+        tableColumnBalance.setCellFactory(column -> getFormattedCurrencyTableCell());
         tableColumnBalance.setCellValueFactory(new PropertyValueFactory("balance"));
+        tableColumnBalance.setStyle("-fx-alignment: TOP-RIGHT;");
+        
 
         //Column Account credit line
-        tableColumnCreditLine.setCellFactory(TextFieldTableCell.<Account, Double>forTableColumn(new DoubleStringConverter()));
+        tableColumnCreditLine.setCellFactory(column -> getFormattedCurrencyTableCell());
         tableColumnCreditLine.setCellValueFactory(new PropertyValueFactory("creditLine"));
+        tableColumnCreditLine.setStyle("-fx-alignment: TOP-RIGHT;");
 
         //Column Account begin balance
-        tableColumnBeginBalance.setCellFactory(TextFieldTableCell.<Account, Double>forTableColumn(new DoubleStringConverter()));
+        tableColumnBeginBalance.setCellFactory(column -> getFormattedCurrencyTableCell());
         tableColumnBeginBalance.setCellValueFactory(new PropertyValueFactory("beginBalance"));
+        tableColumnBeginBalance.setStyle("-fx-alignment: TOP-RIGHT;");
 
         //Column Account begin balance timestamp
-        tableColumnBeginBalanceTimestamp.setCellFactory(TextFieldTableCell.<Account, Date>forTableColumn(new DateStringConverter()));
+        tableColumnBeginBalanceTimestamp.setCellFactory(column -> {
+            TableCell<Account, Date> cell = new TableCell<Account, Date>() {
+                private DateFormat df = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
+
+                @Override
+                protected void updateItem(Date item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty) {
+                        setText(null);
+                    } else {
+                        setText(df.format(item));
+                    }
+                }
+            };
+
+            return cell;
+        });
         tableColumnBeginBalanceTimestamp.setCellValueFactory(new PropertyValueFactory("beginBalanceTimestamp"));
+        tableColumnBeginBalanceTimestamp.setStyle("-fx-alignment: TOP-CENTER;");
 
-        //Column Account customers
-        tableColumnCustomers.setCellFactory(call -> {
-            // create a new cell for array lists
-            return new ComboBoxTableCell<Account, Set<Customer>>() {
-                @Override
-                public void updateItem(Set<Customer> item, boolean empty) {
-                    super.updateItem(item, empty);
-                    // if there is no item, return an empty cell
-                    if (empty || item == null) {
-                        setGraphic(null);
-                    } else {
-                        ComboBox<String> box = new ComboBox<>();
-                        // set combo box items
-                        List<String> customersCombo = new ArrayList<>();
-                        for (Customer c : item) {
-                            String name = c.getFirstName() + " " + c.getLastName();
-                            customersCombo.add(name);
-                        }
-
-                        box.setItems(FXCollections.observableArrayList(customersCombo));
-                        box.getSelectionModel().selectLast();
-                        box.prefWidthProperty().bind(tableColumnCustomers.widthProperty().subtract(5));
-                        box.setMaxWidth(Control.USE_PREF_SIZE);
-                        // set cell contents
-                        setGraphic(box);
-                    }
-                }
-            };
-        });
-        tableColumnCustomers.setCellValueFactory(new PropertyValueFactory("customers"));
-
-        
-        
-        //Column Account movements
-        tableColumnMovements.setCellFactory(call -> {
-            // create a new cell for array lists
-            return new ComboBoxTableCell<Account, Set<Movement>>() {
-                @Override
-                public void updateItem(Set<Movement> item, boolean empty) {
-                    super.updateItem(item, empty);
-                    // if there is no item, return an empty cell
-                    if (empty || item == null) {
-                        setGraphic(null);
-                    } else {
-                        ComboBox<String> box = new ComboBox<>();
-                        // set combo box items
-                        List<String> movementsCombo = new ArrayList<>();
-                        for (Movement m : item) {
-                            String movement = m.getDescription() +": "+ m.getAmount();
-                            movementsCombo.add(movement);
-                        }
-                        box.setItems(FXCollections.observableArrayList(movementsCombo));
-                        box.prefWidthProperty().bind(tableColumnCustomers.widthProperty().subtract(5));
-                        box.getSelectionModel().selectFirst();
-                        box.setMaxWidth(Control.USE_PREF_SIZE);
-                        box.widthProperty();
-                        // set cell contents
-                        setGraphic(box);
-
-                    }
-                }
-            };
-        });
-        tableColumnMovements.setCellValueFactory(new PropertyValueFactory("movements"));
-
+        tableView.getSortOrder().add(tableColumnBeginBalanceTimestamp);
         tableView.setItems(data);
-        
-        //AutoSize from last column
-        DoubleBinding usedWidth = tableColumnId.widthProperty().add(tableColumnType.widthProperty())
-                .add(tableColumnDescription.widthProperty()).add(tableColumnBalance.widthProperty())
-                .add(tableColumnCreditLine.widthProperty()).add(tableColumnBeginBalance.widthProperty())
-                .add(tableColumnBeginBalanceTimestamp.widthProperty()).add(tableColumnCustomers.widthProperty());
-        tableColumnMovements.prefWidthProperty().bind(tableView.widthProperty().subtract(usedWidth));
+
+        //Auto resize table columns on screen resize
+        stage.widthProperty().addListener((obs, oldVal, newVal) -> {
+            if (stage.isMaximized()) {
+                tableColumnId.prefWidthProperty().bind(tableView.widthProperty());
+                tableColumnBeginBalance.prefWidthProperty().bind(tableView.widthProperty());
+                tableColumnBalance.prefWidthProperty().bind(tableView.widthProperty());
+                tableColumnCreditLine.prefWidthProperty().bind(tableView.widthProperty());
+                tableColumnDescription.prefWidthProperty().bind(tableView.widthProperty());
+                tableColumnType.prefWidthProperty().bind(tableView.widthProperty());
+            } else {
+                tableColumnId.prefWidthProperty().bind(tableColumnId.minWidthProperty());
+                tableColumnBeginBalance.prefWidthProperty().bind(tableColumnBalance.minWidthProperty());
+                tableColumnBalance.prefWidthProperty().bind(tableColumnBalance.minWidthProperty());
+                tableColumnCreditLine.prefWidthProperty().bind(tableColumnCreditLine.minWidthProperty());
+                tableColumnDescription.prefWidthProperty().bind(tableColumnDescription.minWidthProperty());
+                tableColumnType.prefWidthProperty().bind(tableColumnType.minWidthProperty());
+
+            }
+
+            DoubleBinding usedWidth = tableColumnId.widthProperty().add(tableColumnType.widthProperty())
+                    .add(tableColumnDescription.widthProperty()).add(tableColumnBalance.widthProperty())
+                    .add(tableColumnCreditLine.widthProperty()).add(tableColumnBeginBalance.widthProperty());
+            tableColumnBeginBalanceTimestamp.prefWidthProperty().bind(tableView.widthProperty().subtract(usedWidth));
+        });
 
     }
 
@@ -376,6 +391,55 @@ public class CustomerAccountsController {
      */
     public void setUser(Customer user) {
         this.user = user;
+    }
+
+    /**
+     * Handles the action event of buttonNewSoftware
+     *
+     * @param event The action event
+     */
+    public void handleButtonNewAccountAction(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/recuperacion_bank_client/views/AddAccountView.fxml"));
+            Parent root = (Parent) loader.load();
+            AddAccountController controller = ((AddAccountController) loader.getController());
+            controller.setStage(new Stage());
+            controller.setParentEvent(event);
+            controller.setParentStage(stage);
+            controller.setUser(user);
+            controller.initStage(root);
+        } catch (Exception ex) {
+            LOGGER.severe("Error opening AddAccount: "+ex.getMessage());
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error opening new view");
+            alert.setHeaderText(null);
+            alert.setContentText("There was an error opening the view. Please try again later");
+            alert.showAndWait();
+        }
+    }
+    
+    /**
+     * This method will return modified TableCell with formated view for monetary values
+     * based on the user Locale
+     * @return the TableCell that will be set as cell factory 
+     */
+    private TableCell<Account, Double> getFormattedCurrencyTableCell () {
+        TableCell<Account, Double> cell = new TableCell<Account, Double>() {
+                private DecimalFormat formatter = (DecimalFormat) NumberFormat
+                        .getCurrencyInstance(Locale.getDefault());
+
+                @Override
+                protected void updateItem(Double item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty) {
+                        setText(null);
+                    } else {
+                        setText(formatter.format(item));
+                    }
+                }
+            };
+
+            return cell;
     }
 
 }
