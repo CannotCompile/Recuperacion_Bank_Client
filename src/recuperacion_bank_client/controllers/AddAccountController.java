@@ -48,6 +48,7 @@ import recuperacion_bank_client.model.Customer;
 
 /**
  * Controller class for the view AddAccountView
+ *
  * @author leioa
  */
 public class AddAccountController {
@@ -62,7 +63,7 @@ public class AddAccountController {
      */
     private static final Logger LOGGER = Logger.
             getLogger("recuperacion_bank_client.controllers.AddAccountController");
-    
+
     /**
      * FileHandler to write logs on a file
      */
@@ -318,6 +319,7 @@ public class AddAccountController {
             }
             if (!repeated) {
                 createNewAccount(newAccount);
+
             } else if (repeated) {
                 LOGGER.info("The new account id has updated because was repeated at the moment of the creation");
                 newAccount.setId(getRandomId());
@@ -342,11 +344,10 @@ public class AddAccountController {
      */
     private void createNewAccount(Account newAccount) {
         boolean ok = false;
+        boolean ok2 = false;
         try {
             CLIENT.createAccount(newAccount);
             ok = true;
-            
-            LOGGER.info("New account with id: " + newAccount.getId() + " created for customer: " + user.getId());
         } catch (Exception ex) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error creating the account");
@@ -356,19 +357,49 @@ public class AddAccountController {
             LOGGER.severe("There was an error creating new account: " + ex.getMessage());
         }
 
-        if (ok){
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("New account created!");
-            alert.setHeaderText(null);
-            alert.setContentText("You have succesfully created a new "
-                    + newAccount.getType() + " account with id: " + newAccount.getId());
-            alert.showAndWait();
-            
-            textFieldId.setText("" + getRandomId());
-            textAreaDescription.setText("");
-            textFieldBeginBalance.setText("0");
-            textFieldCreditLine.setText("0");
+        if (ok) {
+            List<Account> accounts = new ArrayList<Account>(CustomerAccountsController.getAccounts("" + user.getId()));
+            try {
+                if (accounts.get(0) != null) {
+                    Set<Customer> customers = accounts.get(0).getCustomers();
+                    for (Customer c : customers) {
+                        if (c.getId().equals(user.getId())) {
+                            user = c;
+                            ok2 = true;
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error creating the account: Wrong customer ID");
+                alert.setHeaderText(null);
+                alert.setContentText("Please check that customer ID exists and try again later.");
+                alert.showAndWait();
+                LOGGER.severe("There was an error creating account: Please, check that user ID from USERCONFIG/userId.txt is correct");
+                if (user.getFirstName() == null) {
+                    user.setFirstName("");
+                    user.setMiddleInitial("");
+                    user.setLastName("");
+                }
+                ok2 = false;
+            }
         }
+        
+        if (ok2) {
+                LOGGER.info("New account with id: " + newAccount.getId() + " created for customer: " + user.getId());
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("New account created!");
+                alert.setHeaderText(null);
+                alert.setContentText("You have succesfully created a new "
+                        + newAccount.getType() + " account with id: " + newAccount.getId());
+                alert.showAndWait();
+
+                textFieldId.setText("" + getRandomId());
+                textAreaDescription.setText("");
+                textFieldBeginBalance.setText("0");
+                textFieldCreditLine.setText("0");
+            }
     }
 
     /**
@@ -436,17 +467,17 @@ public class AddAccountController {
                 textFieldCreditLine.setText(formatter.format(Double.parseDouble(
                         textFieldCreditLine.getText())));
             }
-            textFieldCreditLine.setText(""+Double.parseDouble(textFieldCreditLine.getText()));
-            textFieldBeginBalance.setText(""+Double.parseDouble(textFieldBeginBalance.getText()));
+            textFieldCreditLine.setText("" + Double.parseDouble(textFieldCreditLine.getText()));
+            textFieldBeginBalance.setText("" + Double.parseDouble(textFieldBeginBalance.getText()));
 
         } else {
-            if (textFieldBeginBalance.isFocused() && 
-                    Double.parseDouble(textFieldBeginBalance.getText()) == Double.parseDouble("0")) {
+            if (textFieldBeginBalance.isFocused()
+                    && Double.parseDouble(textFieldBeginBalance.getText()) == Double.parseDouble("0")) {
                 textFieldBeginBalance.setText("");
             }
 
-            if (textFieldCreditLine.isFocused() && 
-                    Double.parseDouble(textFieldCreditLine.getText()) == Double.parseDouble("0")) {
+            if (textFieldCreditLine.isFocused()
+                    && Double.parseDouble(textFieldCreditLine.getText()) == Double.parseDouble("0")) {
                 textFieldCreditLine.setText("");
             }
         }
@@ -489,7 +520,7 @@ public class AddAccountController {
     public void setFileHandlerLogger(FileHandler fileHandler) {
         this.fileHandlerLogger = fileHandler;
     }
-    
+
     /**
      * This method sets the stage of the parent window
      *

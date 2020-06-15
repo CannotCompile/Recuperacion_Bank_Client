@@ -200,16 +200,16 @@ public class CustomerAccountsController {
             }
         } catch (Exception e) {
             Alert alert = new Alert(AlertType.ERROR);
-            alert.setTitle("Error retrieving info");
+            alert.setTitle("Error retrieving accounts");
             alert.setHeaderText(null);
-            alert.setContentText("Cannot get the user information. Please check the ID and, try again later.");
+            alert.setContentText("Cannot get the user information. Please check that ID exists and has accounts and try again later.");
             alert.showAndWait();
-            LOGGER.severe("There was an error retrieving user information: "+e.getMessage());
+            LOGGER.severe("There was an error retrieving user information: Please, check the user ID from USERCONFIG/userId.txt and Add a new account");
             if(user.getFirstName() == null){
                 user.setFirstName("");
                 user.setMiddleInitial("");
                 user.setLastName("");
-                buttonNewAccount.setDisable(true);
+                
             }
         }
         labelUserName.setText(user.getFirstName() + " " + user.getMiddleInitial() + " " + user.getLastName());
@@ -236,7 +236,7 @@ public class CustomerAccountsController {
      *
      * @param id the id of the user, used as param to filter accounts in REST
      */
-    private Set<Account> getAccounts(String id) {
+    public static Set<Account> getAccounts(String id) {
         Set<Account> accounts = new HashSet<Account>();
         try {
             accounts = CLIENT.findAccountsByCustomerId(new GenericType<Set<Account>>() {
