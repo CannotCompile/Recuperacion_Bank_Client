@@ -5,76 +5,52 @@
  */
 package recuperacion_bank_client.controllers;
 
-import com.sun.javafx.scene.control.skin.TableViewSkin;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.io.File;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import javafx.beans.binding.DoubleBinding;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TableView.ResizeFeatures;
-import javafx.scene.control.TextField;
-import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.ComboBoxTableCell;
-import javafx.scene.control.cell.MapValueFactory;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 import javafx.util.StringConverter;
-import javafx.util.converter.DateStringConverter;
-import javafx.util.converter.DefaultStringConverter;
-import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.LongStringConverter;
 import javax.ws.rs.core.GenericType;
 import recuperacion_bank_client.Application;
 import recuperacion_bank_client.clients.AccountClient;
-import recuperacion_bank_client.clients.CustomerClient;
 import recuperacion_bank_client.model.Account;
 import recuperacion_bank_client.model.AccountType;
 import recuperacion_bank_client.model.Customer;
-import recuperacion_bank_client.model.Movement;
 
 /**
- *
+ * Controller class for the view CustomerAccountView
  * @author leioa
  */
 public class CustomerAccountsController {
@@ -103,12 +79,6 @@ public class CustomerAccountsController {
      * The REST client for accounts
      */
     private static final AccountClient CLIENT = new AccountClient();
-
-    /**
-     * VBox that contain all the view
-     */
-    @FXML
-    private VBox vBoxContainer;
 
     /**
      * ImageView that contains user's image
@@ -256,6 +226,9 @@ public class CustomerAccountsController {
             alert.setContentText("There was an error showing the data, please, try again.");
             alert.showAndWait();
         }
+        File file = new File("resources/img/userDefault.png");
+        Image image = new Image(file.toURI().toString());
+        imageView.setImage(image);
     }
 
     /**

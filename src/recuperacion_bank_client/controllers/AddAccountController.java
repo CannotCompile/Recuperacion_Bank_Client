@@ -5,30 +5,24 @@
  */
 package recuperacion_bank_client.controllers;
 
-import java.io.IOException;
 import java.sql.Date;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.UnaryOperator;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -51,10 +45,9 @@ import recuperacion_bank_client.clients.AccountClient;
 import recuperacion_bank_client.model.Account;
 import recuperacion_bank_client.model.AccountType;
 import recuperacion_bank_client.model.Customer;
-import recuperacion_bank_client.model.Movement;
 
 /**
- *
+ * Controller class for the view AddAccountView
  * @author leioa
  */
 public class AddAccountController {

@@ -4,28 +4,20 @@
  * and open the template in the editor.
  */
 package recuperacion_bank_client;
-
-import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import recuperacion_bank_client.controllers.CustomerAccountsController;
 import recuperacion_bank_client.model.Customer;
 
 /**
- *
+ * First class loaded in the program execution
  * @author leioa
  */
 public class Application extends javafx.application.Application {
@@ -36,7 +28,7 @@ public class Application extends javafx.application.Application {
     private static final Logger LOGGER = Logger.
             getLogger("recuperacion_bank_client.Application");
     /**
-     * FileHandler to write logs on a file
+     * FileHandler for writing logs on a file.
      */
     private FileHandler fileHandlerLogger;
 
@@ -69,20 +61,28 @@ public class Application extends javafx.application.Application {
         controller.initStage(root);
     }
 
+    /**
+     * This method reads the user ID from a textFile located on files.
+     */
     private void readUser() {
         try {
             this.user.setId(Long.parseLong(new String(Files.readAllBytes(Paths.get("USERCONFIG/userId.txt")))));
         } catch (Exception e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            LOGGER.severe("There was an error parsing userId.txt");
+            LOGGER.severe("There was an error parsing the id from USERCONFIG/userId.txt");
             alert.setTitle("Error retrieving User ID");
             alert.setHeaderText(null);
-            alert.setContentText("There was an error reading the file that contains User ID. Please try again later");
+            alert.setContentText("There was an error reading the file that contains User ID. Please check that is a real ID, and try again");
             alert.showAndWait();
             Runtime.getRuntime().exit(0);
         }
     }
 
+    /**
+     * Method used to set a fileHandler for different class loggers
+     * @param logger to be handled
+     * @param fh File Handler
+     */
     public static void setLoggerToFile(Logger logger, FileHandler fh) {
         try {
             SimpleFormatter formatter = new SimpleFormatter();
