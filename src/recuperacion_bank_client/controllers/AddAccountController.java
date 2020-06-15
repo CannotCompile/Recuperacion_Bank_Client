@@ -5,6 +5,7 @@
  */
 package recuperacion_bank_client.controllers;
 
+import java.io.IOException;
 import java.sql.Date;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -20,7 +21,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.UnaryOperator;
+import java.util.logging.FileHandler;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -43,6 +46,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javax.ws.rs.core.GenericType;
+import recuperacion_bank_client.Application;
 import recuperacion_bank_client.clients.AccountClient;
 import recuperacion_bank_client.model.Account;
 import recuperacion_bank_client.model.AccountType;
@@ -65,6 +69,11 @@ public class AddAccountController {
      */
     private static final Logger LOGGER = Logger.
             getLogger("recuperacion_bank_client.controllers.AddAccountController");
+    
+    /**
+     * FileHandler to write logs on a file
+     */
+    private FileHandler fileHandlerLogger;
 
     /**
      * The REST client for accounts
@@ -152,7 +161,8 @@ public class AddAccountController {
      *
      * @param root Root to assign to the scene
      */
-    public void initStage(Parent root) {
+    public void initStage(Parent root) throws Exception {
+        Application.setLoggerToFile(LOGGER, fileHandlerLogger);
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.setTitle("Add account");
@@ -167,6 +177,7 @@ public class AddAccountController {
                     CustomerAccountsController controller = ((CustomerAccountsController) loader.getController());
                     controller.setUser(user);
                     controller.setStage(parentStage);
+                    controller.setFileHandlerLogger(fileHandlerLogger);
                     controller.initStage(root);
                 } catch (Exception e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -337,14 +348,11 @@ public class AddAccountController {
      * @param newAccount the account that will be sended
      */
     private void createNewAccount(Account newAccount) {
+        boolean ok = false;
         try {
             CLIENT.createAccount(newAccount);
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("New account created!");
-            alert.setHeaderText(null);
-            alert.setContentText("You have succesfully created a new "
-                    + newAccount.getType() + " account with id: " + newAccount.getId());
-            alert.showAndWait();
+            ok = true;
+            
             LOGGER.info("New account with id: " + newAccount.getId() + " created for customer: " + user.getId());
         } catch (Exception ex) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -355,10 +363,19 @@ public class AddAccountController {
             LOGGER.severe("There was an error creating new account: " + ex.getMessage());
         }
 
-        textFieldId.setText("" + getRandomId());
-        textAreaDescription.setText("");
-        textFieldBeginBalance.setText("0");
-        textFieldCreditLine.setText("0");
+        if (ok){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("New account created!");
+            alert.setHeaderText(null);
+            alert.setContentText("You have succesfully created a new "
+                    + newAccount.getType() + " account with id: " + newAccount.getId());
+            alert.showAndWait();
+            
+            textFieldId.setText("" + getRandomId());
+            textAreaDescription.setText("");
+            textFieldBeginBalance.setText("0");
+            textFieldCreditLine.setText("0");
+        }
     }
 
     /**
@@ -381,6 +398,7 @@ public class AddAccountController {
             textFieldCreditLine.setFocusTraversable(true);
             textFieldCreditLine.setMouseTransparent(false);
         } else {
+            textFieldCreditLine.setText("0");
             textFieldCreditLine.setEditable(false);
             textFieldCreditLine.setFocusTraversable(false);
             textFieldCreditLine.setMouseTransparent(true);
@@ -425,13 +443,17 @@ public class AddAccountController {
                 textFieldCreditLine.setText(formatter.format(Double.parseDouble(
                         textFieldCreditLine.getText())));
             }
+            textFieldCreditLine.setText(""+Double.parseDouble(textFieldCreditLine.getText()));
+            textFieldBeginBalance.setText(""+Double.parseDouble(textFieldBeginBalance.getText()));
 
         } else {
-            if (textFieldBeginBalance.isFocused() && textFieldBeginBalance.getText().equals("0")) {
+            if (textFieldBeginBalance.isFocused() && 
+                    Double.parseDouble(textFieldBeginBalance.getText()) == Double.parseDouble("0")) {
                 textFieldBeginBalance.setText("");
             }
 
-            if (textFieldCreditLine.isFocused() && textFieldCreditLine.getText().equals("0")) {
+            if (textFieldCreditLine.isFocused() && 
+                    Double.parseDouble(textFieldCreditLine.getText()) == Double.parseDouble("0")) {
                 textFieldCreditLine.setText("");
             }
         }
@@ -466,6 +488,15 @@ public class AddAccountController {
         this.stage = stage;
     }
 
+    /**
+     * Method that sets the file handler for loggers
+     *
+     * @param fileHandler for logger file
+     */
+    public void setFileHandlerLogger(FileHandler fileHandler) {
+        this.fileHandlerLogger = fileHandler;
+    }
+    
     /**
      * This method sets the stage of the parent window
      *

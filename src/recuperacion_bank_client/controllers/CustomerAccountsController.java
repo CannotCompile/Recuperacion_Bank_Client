@@ -21,7 +21,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.FileHandler;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -63,6 +65,7 @@ import javafx.util.converter.DefaultStringConverter;
 import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.LongStringConverter;
 import javax.ws.rs.core.GenericType;
+import recuperacion_bank_client.Application;
 import recuperacion_bank_client.clients.AccountClient;
 import recuperacion_bank_client.clients.CustomerClient;
 import recuperacion_bank_client.model.Account;
@@ -87,6 +90,10 @@ public class CustomerAccountsController {
     private static final Logger LOGGER = Logger.
             getLogger("recuperacion_bank_client.controllers.CustomerAccountsController");
 
+    /**
+     * FileHandler to write logs in a file
+     */
+    private FileHandler fileHandlerLogger;
     /**
      * Stage of the controller
      */
@@ -192,6 +199,7 @@ public class CustomerAccountsController {
      * @param root Root to assign to the scene
      */
     public void initStage(Parent root) {
+        Application.setLoggerToFile(LOGGER, fileHandlerLogger);
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.setTitle("Accounts");
@@ -224,13 +232,14 @@ public class CustomerAccountsController {
             Alert alert = new Alert(AlertType.ERROR);
             alert.setTitle("Error retrieving info");
             alert.setHeaderText(null);
-            alert.setContentText("Cannot get the user information. Please, try again later.");
+            alert.setContentText("Cannot get the user information. Please check the ID and, try again later.");
             alert.showAndWait();
             LOGGER.severe("There was an error retrieving user information: "+e.getMessage());
             if(user.getFirstName() == null){
                 user.setFirstName("");
                 user.setMiddleInitial("");
                 user.setLastName("");
+                buttonNewAccount.setDisable(true);
             }
         }
         labelUserName.setText(user.getFirstName() + " " + user.getMiddleInitial() + " " + user.getLastName());
@@ -322,7 +331,6 @@ public class CustomerAccountsController {
         tableColumnBalance.setCellValueFactory(new PropertyValueFactory("balance"));
         tableColumnBalance.setStyle("-fx-alignment: TOP-RIGHT;");
         
-
         //Column Account credit line
         tableColumnCreditLine.setCellFactory(column -> getFormattedCurrencyTableCell());
         tableColumnCreditLine.setCellValueFactory(new PropertyValueFactory("creditLine"));
@@ -394,6 +402,15 @@ public class CustomerAccountsController {
     }
 
     /**
+     * Method that sets the file handler for loggers
+     *
+     * @param fileHandler for logger file
+     */
+    public void setFileHandlerLogger(FileHandler fileHandler) {
+        this.fileHandlerLogger = fileHandler;
+    }
+    
+    /**
      * Handles the action event of buttonNewSoftware
      *
      * @param event The action event
@@ -406,6 +423,7 @@ public class CustomerAccountsController {
             controller.setStage(new Stage());
             controller.setParentEvent(event);
             controller.setParentStage(stage);
+            controller.setFileHandlerLogger(fileHandlerLogger);
             controller.setUser(user);
             controller.initStage(root);
         } catch (Exception ex) {
