@@ -161,6 +161,7 @@ public class AddAccountController {
         stage.setScene(scene);
         stage.setTitle("Add account");
         stage.initModality(Modality.WINDOW_MODAL);
+        stage.setResizable(false);
         stage.initOwner(((Node) parentEvent.getSource()).getScene().getWindow());
 
         stage.setOnHidden(new EventHandler<WindowEvent>() {
