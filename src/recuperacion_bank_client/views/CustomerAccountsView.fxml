@@ -52,7 +52,7 @@
       </HBox>
       <TableView id="tableView" fx:id="tableView" prefHeight="376.0" prefWidth="700.0" VBox.vgrow="ALWAYS">
          <VBox.margin>
-            <Insets bottom="70.0" left="100.0" right="100.0" />
+            <Insets bottom="70.0" left="90.0" right="90.0" />
          </VBox.margin>
          <columns>
             <TableColumn id="tableColumnId" fx:id="tableColumnId" maxWidth="120.0" minWidth="96.0" prefWidth="96.0" text="Account ID" />
@@ -61,7 +61,7 @@
             <TableColumn id="tableColumnBalance" fx:id="tableColumnBalance" maxWidth="120.0" minWidth="90.0" prefWidth="90.0" text="Balance" />
             <TableColumn id="tableColumnCreditLine" fx:id="tableColumnCreditLine" maxWidth="200.0" minWidth="81.0" prefWidth="81.0" text="Credit line" />
             <TableColumn id="tableColumnBeginBalance" fx:id="tableColumnBeginBalance" maxWidth="120.0" minWidth="88.0" prefWidth="88.0" text="Begin balance" />
-            <TableColumn id="tableColumnBeginBalanceTimestamp" fx:id="tableColumnBeginBalanceTimestamp" minWidth="120.0" prefWidth="120.0" text="Begin balance date" />
+            <TableColumn id="tableColumnBeginBalanceTimestamp" fx:id="tableColumnBeginBalanceTimestamp" minWidth="140.0" prefWidth="140.0" text="Begin balance date" />
          </columns>
       </TableView>
    </children>

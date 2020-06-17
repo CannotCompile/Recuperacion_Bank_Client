@@ -359,7 +359,7 @@ public class AddAccountController {
         }
 
         if (ok) {
-            List<Account> accounts = new ArrayList<Account>(CustomerAccountsController.getAccounts("" + user.getId()));
+            List<Account> accounts = new ArrayList<Account>(CustomerAccountsController.getCustomerAccounts("" + user.getId()));
             try {
                 if (accounts.get(0) != null) {
                     Set<Customer> customers = accounts.get(0).getCustomers();

@@ -187,7 +187,7 @@ public class CustomerAccountsController {
      * Method that populates the data of the view
      */
     private void populateData() {
-        List<Account> accounts = new ArrayList<Account>(getAccounts("" + user.getId()));
+        List<Account> accounts = new ArrayList<Account>(getCustomerAccounts("" + user.getId()));
         try {
             if (accounts.get(0) != null) {
                 Set<Customer> customers = accounts.get(0).getCustomers();
@@ -234,9 +234,9 @@ public class CustomerAccountsController {
     /**
      * Method that gets all the accounts of a user
      *
-     * @param id the id of the user, used as param to filter accounts in REST
+     * @param id the id of a customer, used as param to filter accounts in REST
      */
-    public static Set<Account> getAccounts(String id) {
+    public static Set<Account> getCustomerAccounts(String id) {
         Set<Account> accounts = new HashSet<Account>();
         try {
             accounts = CLIENT.findAccountsByCustomerId(new GenericType<Set<Account>>() {
@@ -334,9 +334,11 @@ public class CustomerAccountsController {
         });
         tableColumnBeginBalanceTimestamp.setCellValueFactory(new PropertyValueFactory("beginBalanceTimestamp"));
         tableColumnBeginBalanceTimestamp.setStyle("-fx-alignment: TOP-CENTER;");
-
-        tableView.getSortOrder().add(tableColumnBeginBalanceTimestamp);
+        
+        tableColumnBeginBalanceTimestamp.setSortType(TableColumn.SortType.DESCENDING);
         tableView.setItems(data);
+        tableView.getSortOrder().add(tableColumnBeginBalanceTimestamp);
+        
 
         //Auto resize table columns on screen resize
         stage.widthProperty().addListener((obs, oldVal, newVal) -> {
@@ -388,7 +390,7 @@ public class CustomerAccountsController {
      *
      * @param event The action event
      */
-    public void handleButtonNewAccountAction(ActionEvent event) {
+    private void handleButtonNewAccountAction(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/recuperacion_bank_client/views/AddAccountView.fxml"));
             Parent root = (Parent) loader.load();
