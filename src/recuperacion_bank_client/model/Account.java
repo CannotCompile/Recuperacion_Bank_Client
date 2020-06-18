@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author leioa
+ * @author Adrian Garcia
  */
 @XmlRootElement
 public class Account implements Serializable {

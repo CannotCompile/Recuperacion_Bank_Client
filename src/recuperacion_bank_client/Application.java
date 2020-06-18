@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package recuperacion_bank_client;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -18,7 +13,7 @@ import recuperacion_bank_client.model.Customer;
 
 /**
  * First class loaded in the program execution
- * @author leioa
+ * @author Adrian Garcia
  */
 public class Application extends javafx.application.Application {
 

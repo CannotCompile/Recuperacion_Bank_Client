@@ -51,7 +51,7 @@ import recuperacion_bank_client.model.Customer;
 
 /**
  * Controller class for the view CustomerAccountView
- * @author leioa
+ * @author Adrian Garcia
  */
 public class CustomerAccountsController {
 

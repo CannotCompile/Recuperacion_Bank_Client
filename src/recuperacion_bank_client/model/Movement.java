@@ -10,7 +10,7 @@ import java.util.Date;
 
 /**
  *
- * @author leioa
+ * @author Adrian Garcia
  */
 public class Movement implements Serializable {
 

@@ -6,19 +6,10 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 /**
  *
- * @author leioa
+ * @author Adrian Garcia
  */
 /**
- * Jersey REST client generated for REST resource:CommentREST [Comment]<br>
- * USAGE:
- * <pre>
- *        CommentClient client = new CommentClient();
- *        Object response = client.XXX(...);
- *        // do whatever with response
- *        client.close();
- * </pre>
- *
- * @author iker lopez carrillo
+ * Jersey REST client generated for REST resource:AccountREST [Account]
  */
 public class AccountClient {
 
